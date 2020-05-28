@@ -14,9 +14,7 @@
  */
 package net.rptools.mtscript.script;
 
-/**
- * Enumeration for the different export scopes for scripts.
- */
+/** Enumeration for the different export scopes for scripts. */
 public enum ExportScope {
   /** Exported only within the same module. */
   INTERNAL("internal"),
@@ -34,6 +32,7 @@ public enum ExportScope {
 
   /**
    * Creates a new {@code ExportScope}.
+   *
    * @param label the label for the scope.
    */
   ExportScope(String label) {

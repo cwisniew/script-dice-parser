@@ -14,6 +14,8 @@
  */
 package net.rptools.mtscript.parser.visitor;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,7 +23,6 @@ import net.rptools.mtscript.ast.ASTNode;
 import net.rptools.mtscript.ast.BlockNode;
 import net.rptools.mtscript.ast.BlockStatementNode;
 import net.rptools.mtscript.ast.ChatNode;
-import net.rptools.mtscript.ast.DeclarationNode;
 import net.rptools.mtscript.ast.LiteralNode;
 import net.rptools.mtscript.ast.ScriptModuleNode;
 import net.rptools.mtscript.ast.ScriptNode;
@@ -30,19 +31,26 @@ import net.rptools.mtscript.ast.VariableNode;
 import net.rptools.mtscript.ast.VariableNode.Scope;
 import net.rptools.mtscript.parser.MTScript2Lexer;
 import net.rptools.mtscript.parser.MTScript2Parser;
+import net.rptools.mtscript.parser.MTScript2Parser.BoolConstDeclarationContext;
+import net.rptools.mtscript.parser.MTScript2Parser.IntConstDeclarationContext;
+import net.rptools.mtscript.parser.MTScript2Parser.NumberConstDeclarationContext;
+import net.rptools.mtscript.parser.MTScript2Parser.StringConstDeclarationContext;
 import net.rptools.mtscript.parser.MTScript2ParserBaseVisitor;
 import net.rptools.mtscript.parser.MTScript2ParserVisitor;
 import net.rptools.mtscript.script.ExportScope;
 import net.rptools.mtscript.script.ScriptExport;
 import net.rptools.mtscript.script.ScriptImport;
+import net.rptools.mtscript.script.ScriptSymbolTable;
 import org.apache.commons.text.StringEscapeUtils;
 
 /**
- * This class provides a visitor for conversion of {@link ParseTree} into a proper AST Tree for
+ * This class provides a visitor for conversion of {@code ParseTree} into a proper AST Tree for
  * later interpreting.
  */
 public class BuildASTVisitor extends MTScript2ParserBaseVisitor<ASTNode>
     implements MTScript2ParserVisitor<ASTNode> {
+
+  private final ScriptSymbolTable symbolTable = new ScriptSymbolTable();
 
   /** Entry point for input from chat. */
   @Override
@@ -74,6 +82,10 @@ public class BuildASTVisitor extends MTScript2ParserBaseVisitor<ASTNode>
     String version = definition.version.getText();
     String description = parseStringLiteral(definition.desc.getText());
 
+    System.out.println(name);
+    System.out.println(version);
+    System.out.println(description);
+
     List<ScriptImport> imports =
         ctx.scriptImports().stream()
             .map(
@@ -84,13 +96,10 @@ public class BuildASTVisitor extends MTScript2ParserBaseVisitor<ASTNode>
                         u.as != null ? u.as.getText() : u.name.getText()))
             .collect(Collectors.toList());
 
-    List<DeclarationNode> declarationNodes =
-        ctx.scriptModuleBody().stream()
-            .map(
-                n -> {
-                  return DeclarationNode.class.cast(n.accept(this));
-                })
-            .collect(Collectors.toList());
+    for (var node : ctx.scriptModuleBody()) {
+      // dont worry about the return value, we just want the side effect of adding to symbol table.
+      node.accept(this);
+    }
 
     List<ScriptExport> exports =
         ctx.scriptExports().stream()
@@ -105,7 +114,7 @@ public class BuildASTVisitor extends MTScript2ParserBaseVisitor<ASTNode>
                                     e.asName != null ? e.asName.getText() : e.name.getText())))
             .collect(Collectors.toList());
 
-    return new ScriptModuleNode(name, version, description, imports, declarationNodes, exports);
+    return new ScriptModuleNode(name, version, description, imports, symbolTable, exports);
   }
 
   /** Node for holding plain text. */
@@ -661,16 +670,50 @@ public class BuildASTVisitor extends MTScript2ParserBaseVisitor<ASTNode>
   public ASTNode visitConstantDeclaration(MTScript2Parser.ConstantDeclarationContext ctx) {
     return visitChildren(ctx);
   }
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The default implementation returns the result of calling {@link #visitChildren} on {@code
-   * ctx}.
-   */
+
   @Override
-  public ASTNode visitConstantDeclarator(MTScript2Parser.ConstantDeclaratorContext ctx) {
-    return visitChildren(ctx);
+  public ASTNode visitIntConstDeclaration(IntConstDeclarationContext ctx) {
+    String name = ctx.name.getText();
+    BigInteger integer;
+    if (ctx.integerLiteral().DECIMAL_LITERAL() != null) {
+      String val = ctx.integerLiteral().DECIMAL_LITERAL().getText().replaceAll("_", "");
+      integer = new BigInteger(val);
+      if (ctx.neg != null) {
+        integer = integer.multiply(BigInteger.valueOf(-1));
+      }
+    } else {
+      String val = ctx.integerLiteral().HEX_LITERAL().getText();
+      integer = new BigInteger(val, 16);
+    }
+    symbolTable.addConstant(name, integer);
+
+    return super.visitIntConstDeclaration(ctx);
   }
+
+  @Override
+  public ASTNode visitNumberConstDeclaration(NumberConstDeclarationContext ctx) {
+    String name = ctx.name.getText();
+    BigDecimal val = new BigDecimal(ctx.number.getText().replaceAll("_", ""));
+    symbolTable.addConstant(name, val);
+    return super.visitNumberConstDeclaration(ctx);
+  }
+
+  @Override
+  public ASTNode visitBoolConstDeclaration(BoolConstDeclarationContext ctx) {
+    String name = ctx.name.getText();
+    Boolean bool = Boolean.parseBoolean(ctx.name.getText());
+    symbolTable.addConstant(name, bool);
+    return super.visitBoolConstDeclaration(ctx);
+  }
+
+  @Override
+  public ASTNode visitStringConstDeclaration(StringConstDeclarationContext ctx) {
+    String name = ctx.name.getText();
+    String val = parseStringLiteral(ctx.name.getText());
+    symbolTable.addConstant(name, val);
+    return super.visitStringConstDeclaration(ctx);
+  }
+
   /**
    * {@inheritDoc}
    *

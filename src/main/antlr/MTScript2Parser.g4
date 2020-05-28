@@ -187,9 +187,21 @@ externalPropertyName        : (IDENTIFIER DOT)* IDENTIFIER
 
 fieldDeclaration            : type variableDeclarators SEMI;
 
-constantDeclaration         : KEYWORD_CONST type constantDeclarator (COMMA constantDeclarator)* SEMI;
+constantDeclaration         : KEYWORD_CONST ( intConstDeclaration | numberConstDeclaration | boolConstDeclaration | stringConstDeclaration) SEMI
+                            ;
 
-constantDeclarator          : IDENTIFIER (LBRACK RBRACK)* OP_ASSIGN variableInitializer ;
+intConstDeclaration         : KEYWORD_INTEGER name= IDENTIFIER OP_ASSIGN neg=OP_SUB? integerLiteral
+                            ;
+
+numberConstDeclaration      : KEYWORD_NUMBER name=IDENTIFIER OP_ASSIGN number = NUMBER_LITERAL
+                            ;
+
+boolConstDeclaration        : KEYWORD_BOOLEAN name=IDENTIFIER OP_ASSIGN bool = BOOL_LITERAL
+                            ;
+
+stringConstDeclaration      : KEYWORD_STRING name=IDENTIFIER OP_ASSIGN string = STRING_LITERAL
+                            ;
+
 
 variableDeclarators         : variableDeclarator (COMMA variableDeclarator)* ;
 

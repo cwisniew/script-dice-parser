@@ -19,10 +19,9 @@ import static java.util.Objects.requireNonNull;
 import java.util.List;
 import net.rptools.mtscript.script.ScriptExport;
 import net.rptools.mtscript.script.ScriptImport;
+import net.rptools.mtscript.script.ScriptSymbolTable;
 
-/**
- * {@code ASTNode} used to hold the details of a MTS2 Script Module.
- */
+/** {@code ASTNode} used to hold the details of a MTS2 Script Module. */
 public class ScriptModuleNode implements ASTNode {
   /** The name of the script module. */
   private final String name;
@@ -32,17 +31,17 @@ public class ScriptModuleNode implements ASTNode {
   private final String description;
   /** The imports for the script module. */
   private final List<ScriptImport> imports;
-  /**a */
-  private final List<DeclarationNode> declarations;
+  /** a */
+  private final ScriptSymbolTable symbolTable;
+
   private final List<ScriptExport> exports;
 
   /**
-   *
    * @param name
    * @param version
    * @param description
    * @param imports
-   * @param declarations
+   * @param symbolTable
    * @param exports
    */
   public ScriptModuleNode(
@@ -50,13 +49,13 @@ public class ScriptModuleNode implements ASTNode {
       String version,
       String description,
       List<ScriptImport> imports,
-      List<DeclarationNode> declarations,
+      ScriptSymbolTable symbolTable,
       List<ScriptExport> exports) {
     this.name = requireNonNull(name, "name");
     this.version = requireNonNull(version, "version");
     this.description = requireNonNull(description, "description");
     this.imports = List.copyOf(requireNonNull(imports, "imports"));
-    this.declarations = requireNonNull(declarations, "declarations");
+    this.symbolTable = requireNonNull(symbolTable, "symbolTable");
     this.exports = List.copyOf(requireNonNull(exports, "exports"));
   }
 
@@ -76,8 +75,8 @@ public class ScriptModuleNode implements ASTNode {
     return imports;
   }
 
-  public List<DeclarationNode> getDeclarations() {
-    return declarations;
+  public ScriptSymbolTable getSymbolTable() {
+    return symbolTable;
   }
 
   public List<ScriptExport> getExports() {

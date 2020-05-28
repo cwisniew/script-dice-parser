@@ -14,7 +14,5 @@
  */
 package net.rptools.mtscript.script;
 
-/**
- * Record used for recording the exported symbols.
- */
+/** Record used for recording the exported symbols. */
 public record ScriptExport(String name, ExportScope scope, String alias) {}

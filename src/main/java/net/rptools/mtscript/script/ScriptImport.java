@@ -14,7 +14,5 @@
  */
 package net.rptools.mtscript.script;
 
-/**
- * Record used for recording the imports for the script.
- */
+/** Record used for recording the imports for the script. */
 public record ScriptImport(String name, String version, String alias) {}

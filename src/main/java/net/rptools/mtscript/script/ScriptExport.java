@@ -12,6 +12,9 @@
  * <http://www.gnu.org/licenses/> and specifically the Affero license
  * text at <http://www.gnu.org/licenses/agpl.html>.
  */
-package net.rptools.mtscript.ast;
+package net.rptools.mtscript.script;
 
-public enum ASTNodeType {}
+/**
+ * Record used for recording the exported symbols.
+ */
+public record ScriptExport(String name, ExportScope scope, String alias) {}

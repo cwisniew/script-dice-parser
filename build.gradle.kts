@@ -4,7 +4,7 @@ plugins {
     `java-library`
     eclipse
     jacoco
-    id("com.diffplug.gradle.spotless") version "3.28.0"
+    id("com.diffplug.gradle.spotless") version "4.0.1"
 }
 
 group = "net.rptools.scriptparser"
@@ -17,15 +17,19 @@ repositories {
 dependencies {
     antlr("org.antlr:antlr4:4.7.2")
     testImplementation("org.junit.jupiter:junit-jupiter:5.4.0")
-    compile("org.reflections", "reflections", "0.9.11")
-    compile("org.apache.commons", "commons-text", "1.6")
-    compile("com.github.jknack:handlebars:4.1.2")
+    implementation("org.reflections", "reflections", "0.9.11")
+    implementation("org.apache.commons", "commons-text", "1.6")
+    implementation("com.github.jknack:handlebars:4.1.2")
     implementation("org.apache.logging.log4j", "log4j-api", "2.11.0");
     implementation("org.apache.logging.log4j", "log4j-1.2-api", "2.11.0");
 }
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_14
+}
+
+tasks.withType<JavaCompile> {
+    options.compilerArgs.add("--enable-preview")
 }
 
 
@@ -40,7 +44,7 @@ spotless {
     java {
         target("src/**/*.java")
         licenseHeaderFile(file("build-resources/spotless.license.java"))
-        googleJavaFormat()
+        googleJavaFormat("1.8")
         // https://github.com/diffplug/spotless/blob/master/PADDEDCELL.md
         paddedCell()
     }
@@ -59,6 +63,7 @@ spotless {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs("--enable-preview")
     testLogging {
         events("passed", "skipped", "failed", "standard_error", "standard_out")
     }

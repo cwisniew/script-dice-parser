@@ -17,30 +17,47 @@ package net.rptools.mtscript.ast;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import net.rptools.mtscript.script.ScriptExport;
+import net.rptools.mtscript.script.ScriptImport;
 
+/**
+ * {@code ASTNode} used to hold the details of a MTS2 Script Module.
+ */
 public class ScriptModuleNode implements ASTNode {
+  /** The name of the script module. */
   private final String name;
+  /** The version of the script module. */
   private final String version;
+  /** The description of the script module. */
   private final String description;
-  private final List<ImportNode> imports;
+  /** The imports for the script module. */
+  private final List<ScriptImport> imports;
+  /**a */
   private final List<DeclarationNode> declarations;
-  private final ExportNode
-      exports; // TODO Revisit this. Should ExportNode be a thing? Should it just be a
-  // List<ExportNode.Export>?
+  private final List<ScriptExport> exports;
 
+  /**
+   *
+   * @param name
+   * @param version
+   * @param description
+   * @param imports
+   * @param declarations
+   * @param exports
+   */
   public ScriptModuleNode(
       String name,
       String version,
       String description,
-      List<ImportNode> imports,
+      List<ScriptImport> imports,
       List<DeclarationNode> declarations,
-      ExportNode exports) {
+      List<ScriptExport> exports) {
     this.name = requireNonNull(name, "name");
     this.version = requireNonNull(version, "version");
     this.description = requireNonNull(description, "description");
-    this.imports = requireNonNull(imports, "imports");
+    this.imports = List.copyOf(requireNonNull(imports, "imports"));
     this.declarations = requireNonNull(declarations, "declarations");
-    this.exports = requireNonNull(exports, "exports");
+    this.exports = List.copyOf(requireNonNull(exports, "exports"));
   }
 
   public String getName() {
@@ -55,7 +72,7 @@ public class ScriptModuleNode implements ASTNode {
     return description;
   }
 
-  public List<ImportNode> getImports() {
+  public List<ScriptImport> getImports() {
     return imports;
   }
 
@@ -63,7 +80,7 @@ public class ScriptModuleNode implements ASTNode {
     return declarations;
   }
 
-  public ExportNode getExports() {
+  public List<ScriptExport> getExports() {
     return exports;
   }
 }

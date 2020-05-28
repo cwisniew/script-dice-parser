@@ -22,15 +22,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.stream.Collectors;
 import net.rptools.mtscript.ast.ASTNode;
 import net.rptools.mtscript.ast.ChatNode;
-import net.rptools.mtscript.ast.ExportNode;
 import net.rptools.mtscript.ast.ScriptModuleNode;
 import net.rptools.mtscript.ast.ScriptNode;
 import net.rptools.mtscript.ast.TextNode;
 import net.rptools.mtscript.parser.MTScript2Lexer;
 import net.rptools.mtscript.parser.MTScript2Parser;
+import net.rptools.mtscript.script.ScriptExport;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -91,8 +92,8 @@ public class BuildASTVisitorTest {
     assertEquals(module.getDescription(), "An empty module");
     assertEquals(module.getImports().size(), 0);
     assertEquals(module.getDeclarations().size(), 0);
-    ExportNode exports = module.getExports();
-    assertEquals(exports.get().size(), 0);
+    List<ScriptExport> exports = module.getExports();
+    assertEquals(exports.size(), 0);
   }
 
   @Test

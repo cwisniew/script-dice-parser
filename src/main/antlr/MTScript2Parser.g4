@@ -71,7 +71,11 @@ moduleName                  : MODULE_LETTER (MODULE_LETTER | MODULE_DIGIT)*;
 
 scriptExports               : KEYWORD_EXPORT LBRACE (exported (COMMA exported)*) RBRACE;
 
-exported                    : (IDENTIFIER | externalProperty) (KEYWORD_AS IDENTIFIER)? (LBRACK exportDest RBRACK)?;
+exported                    : name = exportedName (KEYWORD_AS asName = IDENTIFIER)? (LBRACK dest = exportDest RBRACK)?;
+
+
+exportedName                : (IDENTIFIER| externalProperty)
+                            ;
 
 exportDest                  : KEYWORD_INTERNAL
                             | KEYWORD_CHAT (LPAREN perm=(KEYWORD_GM | KEYWORD_TRUSTED) RPAREN)?

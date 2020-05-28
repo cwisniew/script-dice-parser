@@ -22,8 +22,6 @@ import net.rptools.mtscript.ast.BlockNode;
 import net.rptools.mtscript.ast.BlockStatementNode;
 import net.rptools.mtscript.ast.ChatNode;
 import net.rptools.mtscript.ast.DeclarationNode;
-import net.rptools.mtscript.ast.ExportNode;
-import net.rptools.mtscript.ast.ImportNode;
 import net.rptools.mtscript.ast.LiteralNode;
 import net.rptools.mtscript.ast.ScriptModuleNode;
 import net.rptools.mtscript.ast.ScriptNode;
@@ -34,6 +32,9 @@ import net.rptools.mtscript.parser.MTScript2Lexer;
 import net.rptools.mtscript.parser.MTScript2Parser;
 import net.rptools.mtscript.parser.MTScript2ParserBaseVisitor;
 import net.rptools.mtscript.parser.MTScript2ParserVisitor;
+import net.rptools.mtscript.script.ExportScope;
+import net.rptools.mtscript.script.ScriptExport;
+import net.rptools.mtscript.script.ScriptImport;
 import org.apache.commons.text.StringEscapeUtils;
 
 /**
@@ -73,14 +74,14 @@ public class BuildASTVisitor extends MTScript2ParserBaseVisitor<ASTNode>
     String version = definition.version.getText();
     String description = parseStringLiteral(definition.desc.getText());
 
-    List<ImportNode> imports =
+    List<ScriptImport> imports =
         ctx.scriptImports().stream()
             .map(
                 u ->
-                    new ImportNode(
+                    new ScriptImport(
                         u.name.getText(),
                         u.semverVersion().getText(),
-                        u.as != null ? u.as.getText() : null))
+                        u.as != null ? u.as.getText() : u.name.getText()))
             .collect(Collectors.toList());
 
     List<DeclarationNode> declarationNodes =
@@ -91,22 +92,20 @@ public class BuildASTVisitor extends MTScript2ParserBaseVisitor<ASTNode>
                 })
             .collect(Collectors.toList());
 
-    List<ExportNode.Export> exports =
+    List<ScriptExport> exports =
         ctx.scriptExports().stream()
             .flatMap(
-                n -> {
-                  return n.exported().stream()
-                      .map(
-                          e -> {
-                            // TODO Implement as
-                            return new ExportNode.Export(e.getText());
-                          });
-                })
+                n ->
+                    n.exported().stream()
+                        .map(
+                            e ->
+                                new ScriptExport(
+                                    e.name.getText(),
+                                    ExportScope.CHAT_ANY,
+                                    e.asName != null ? e.asName.getText() : e.name.getText())))
             .collect(Collectors.toList());
 
-    ExportNode exportNode = new ExportNode(exports);
-
-    return new ScriptModuleNode(name, version, description, imports, declarationNodes, exportNode);
+    return new ScriptModuleNode(name, version, description, imports, declarationNodes, exports);
   }
 
   /** Node for holding plain text. */
